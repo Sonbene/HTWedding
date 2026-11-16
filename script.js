@@ -1,0 +1,559 @@
+/**
+ * ==========================================================================
+ * WEBSITE ĐÁM CƯỚI: TRUNG HIẾU & HOÀI THƯƠNG
+ * Theme: Hoàng Gia & Cổ Phục Truyền Thống (Royal Emerald & Heritage Gold)
+ * ==========================================================================
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // ========================================================================
+  // 1. ĐỒNG HỒ ĐẾM NGƯỢC (COUNTDOWN TIMER)
+  // Ngày cưới: 16:00:00 ngày 28/11/2026 (Giờ Việt Nam GMT+7)
+  // ========================================================================
+  const weddingDate = new Date('2026-11-28T16:00:00+07:00').getTime();
+
+  const daysEl = document.getElementById('countdown-days');
+  const hoursEl = document.getElementById('countdown-hours');
+  const minutesEl = document.getElementById('countdown-minutes');
+  const secondsEl = document.getElementById('countdown-seconds');
+
+  function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = weddingDate - now;
+
+    if (distance <= 0) {
+      if (daysEl) daysEl.textContent = '00';
+      if (hoursEl) hoursEl.textContent = '00';
+      if (minutesEl) minutesEl.textContent = '00';
+      if (secondsEl) secondsEl.textContent = '00';
+      const badge = document.querySelector('.hero-invitation-badge');
+      if (badge) badge.textContent = 'HÔM NAY LÀ NGÀY TRỌNG ĐẠI!';
+      return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+    if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+    if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+    if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  // ========================================================================
+  // 2. CANVAS HIỆU ỨNG HẠT BỤI VÀNG & HOA RƠI (GOLD SPARKLES & PETALS)
+  // ========================================================================
+  const canvas = document.getElementById('goldCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    // Particle types: Hạt bụi vàng lấp lánh (sparkle) và cánh hoa rơi (petal)
+    const particles = [];
+    const particleCount = 45;
+
+    class Particle {
+      constructor() {
+        this.reset(true);
+      }
+
+      reset(init = false) {
+        this.x = Math.random() * width;
+        this.y = init ? Math.random() * height : -20;
+        this.isPetal = Math.random() > 0.65; // 35% là cánh hoa, 65% là bụi vàng
+        this.size = this.isPetal ? (Math.random() * 8 + 6) : (Math.random() * 2.8 + 1);
+        this.speedY = Math.random() * 0.8 + 0.4;
+        this.speedX = Math.sin(Math.random() * Math.PI * 2) * 0.5;
+        this.angle = Math.random() * Math.PI * 2;
+        this.angularSpeed = (Math.random() - 0.5) * 0.02;
+        this.opacity = Math.random() * 0.7 + 0.3;
+        this.pulse = Math.random() * 0.05;
+        this.pulseDir = 1;
+      }
+
+      update() {
+        this.y += this.speedY;
+        this.x += Math.sin(this.angle) * 0.6 + this.speedX;
+        this.angle += this.angularSpeed;
+
+        this.opacity += this.pulse * this.pulseDir;
+        if (this.opacity > 0.85) this.pulseDir = -1;
+        if (this.opacity < 0.25) this.pulseDir = 1;
+
+        if (this.y > height + 20 || this.x < -30 || this.x > width + 30) {
+          this.reset();
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+
+        if (this.isPetal) {
+          // Vẽ cánh hoa sen / cánh hoa vàng đồng
+          ctx.beginPath();
+          ctx.ellipse(0, 0, this.size, this.size * 0.55, 0, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(223, 190, 122, ${this.opacity * 0.75})`;
+          ctx.fill();
+        } else {
+          // Vẽ hạt bụi vàng lấp lánh có ánh hào quang
+          ctx.beginPath();
+          ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(250, 225, 166, ${this.opacity})`;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = 'rgba(250, 225, 166, 0.8)';
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    let isHeroVisible = true;
+    const heroSection = document.getElementById('hero');
+    if ('IntersectionObserver' in window && heroSection) {
+      const heroObserver = new IntersectionObserver((entries) => {
+        isHeroVisible = entries[0].isIntersecting;
+      }, { threshold: 0.1 });
+      heroObserver.observe(heroSection);
+    }
+
+    function animateParticles() {
+      if (isHeroVisible) {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+  }
+
+  // ========================================================================
+  // 3. THANH ĐIỀU HƯỚNG & MENU DI ĐỘNG (NAVBAR & MOBILE DRAWER)
+  // ========================================================================
+  const navbar = document.getElementById('navbar');
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  const navOverlay = document.getElementById('navOverlay');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
+  function toggleMenu() {
+    navToggle.classList.toggle('open');
+    navLinks.classList.toggle('open');
+    navOverlay.classList.toggle('active');
+    document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
+  }
+
+  if (navToggle) {
+    navToggle.addEventListener('click', toggleMenu);
+  }
+
+  if (navOverlay) {
+    navOverlay.addEventListener('click', toggleMenu);
+  }
+
+  // Đóng menu khi click vào link điều hướng
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (navLinks.classList.contains('open')) {
+        toggleMenu();
+      }
+    });
+  });
+
+  // ========================================================================
+  // 4. HIỆU ỨNG CUỘN TRANG XUẤT HIỆN (SCROLL REVEAL ANIMATIONS)
+  // ========================================================================
+  const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+  if ('IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    revealElements.forEach(el => revealObserver.observe(el));
+  } else {
+    // Fallback cho trình duyệt cũ
+    revealElements.forEach(el => el.classList.add('active'));
+  }
+
+  // ========================================================================
+  // 5. ALBUM ẢNH & LIGHTBOX PHÓNG TO
+  // ========================================================================
+  const galleryItems = document.querySelectorAll('.gallery-item');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCaption = document.getElementById('lightboxCaption');
+  const lightboxClose = document.getElementById('lightboxClose');
+  const lightboxPrev = document.getElementById('lightboxPrev');
+  const lightboxNext = document.getElementById('lightboxNext');
+  const btnViewCard = document.getElementById('btnViewCard');
+
+  let currentGalleryIndex = 0;
+  const galleryData = [];
+
+  galleryItems.forEach((item, index) => {
+    const img = item.querySelector('img');
+    const caption = item.getAttribute('data-caption') || img.alt;
+    galleryData.push({
+      src: img.src,
+      caption: caption
+    });
+
+    item.addEventListener('click', () => {
+      openLightbox(index);
+    });
+  });
+
+  function openLightbox(index) {
+    currentGalleryIndex = index;
+    const data = galleryData[currentGalleryIndex];
+    if (!data) return;
+
+    lightboxImg.src = data.src;
+    lightboxCaption.textContent = data.caption;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function showPrevImage() {
+    currentGalleryIndex = (currentGalleryIndex - 1 + galleryData.length) % galleryData.length;
+    openLightbox(currentGalleryIndex);
+  }
+
+  function showNextImage() {
+    currentGalleryIndex = (currentGalleryIndex + 1) % galleryData.length;
+    openLightbox(currentGalleryIndex);
+  }
+
+  if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+  if (lightboxPrev) lightboxPrev.addEventListener('click', showPrevImage);
+  if (lightboxNext) lightboxNext.addEventListener('click', showNextImage);
+
+  // Đóng lightbox khi click vào nền ngoài
+  if (lightbox) {
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+  }
+
+  // Điều khiển bằng phím mũi tên & phím Escape
+  window.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') showPrevImage();
+    if (e.key === 'ArrowRight') showNextImage();
+  });
+
+  // Hỗ trợ nút xem thiệp cưới thực tế
+  if (btnViewCard) {
+    btnViewCard.addEventListener('click', () => {
+      // Mở ảnh thiệp cưới gốc (vị trí 0 trong gallery)
+      openLightbox(0);
+    });
+  }
+
+  // Hỗ trợ vuốt chạm (Touch Swipe) trên mobile
+  let touchStartX = 0;
+  let touchEndX = 0;
+  if (lightbox) {
+    lightbox.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    lightbox.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 50) showNextImage();
+      if (touchEndX > touchStartX + 50) showPrevImage();
+    }, { passive: true });
+  }
+
+  // ========================================================================
+  // 6. SỔ LƯU BÚT ONLINE VỚI LOCALSTORAGE (GUESTBOOK)
+  // ========================================================================
+  const guestbookForm = document.getElementById('guestbookForm');
+  const guestbookMessages = document.getElementById('guestbookMessages');
+
+  // Đọc danh sách lời chúc đã lưu từ localStorage
+  const STORAGE_KEY = 'wedding_wishes_th_ht';
+  function getSavedWishes() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveWish(name, message) {
+    const wishes = getSavedWishes();
+    const newWish = {
+      id: Date.now(),
+      name: name,
+      message: message,
+      date: new Date().toLocaleDateString('vi-VN'),
+      likes: 1
+    };
+    wishes.unshift(newWish);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(wishes));
+    } catch (e) {}
+    return newWish;
+  }
+
+  // Render các lời chúc lưu trữ lên đầu
+  const userWishes = getSavedWishes();
+  userWishes.forEach(wish => {
+    renderWishCard(wish, false);
+  });
+
+  function renderWishCard(wish, prepend = true) {
+    const card = document.createElement('div');
+    card.className = 'wish-card reveal active';
+    card.innerHTML = `
+      <div class="wish-header">
+        <span class="wish-author">${escapeHTML(wish.name)}</span>
+        <span class="wish-date">${wish.date}</span>
+      </div>
+      <p class="wish-body">${escapeHTML(wish.message)}</p>
+      <button class="wish-like-btn" onclick="toggleLike(this)">♥ <span class="like-count">${wish.likes || 1}</span> Yêu thích</button>
+    `;
+    if (prepend && guestbookMessages.firstChild) {
+      guestbookMessages.insertBefore(card, guestbookMessages.firstChild);
+    } else {
+      guestbookMessages.appendChild(card);
+    }
+  }
+
+  if (guestbookForm) {
+    guestbookForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('gbName');
+      const msgInput = document.getElementById('gbMessage');
+
+      const name = nameInput.value.trim();
+      const msg = msgInput.value.trim();
+
+      if (!name || !msg) return;
+
+      const saved = saveWish(name, msg);
+      renderWishCard(saved, true);
+
+      // Reset form & thông báo
+      guestbookForm.reset();
+      alert('Cảm ơn bạn đã gửi lời chúc mừng ấm áp tới Trung Hiếu & Hoài Thương! 💕');
+    });
+  }
+
+  // ========================================================================
+  // 7. FORM XÁC NHẬN THAM DỰ (RSVP)
+  // ========================================================================
+  const rsvpForm = document.getElementById('rsvpForm');
+  const rsvpSuccess = document.getElementById('rsvpSuccess');
+  const rsvpSuccessText = document.getElementById('rsvpSuccessText');
+
+  if (rsvpForm) {
+    rsvpForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('rsvpName').value.trim();
+      const phone = document.getElementById('rsvpPhone').value.trim();
+      const guests = document.getElementById('rsvpGuests').value;
+      const note = document.getElementById('rsvpNote').value.trim();
+      const eventChoice = document.querySelector('input[name="rsvpEvent"]:checked')?.value || 'ca-hai';
+
+      // Lưu trữ xác nhận vào localStorage
+      const rsvpData = { name, phone, guests, note, eventChoice, time: new Date().toISOString() };
+      try {
+        localStorage.setItem('wedding_rsvp_' + phone, JSON.stringify(rsvpData));
+      } catch (err) {}
+
+      // Ẩn form và hiển thị lời cảm ơn trang trọng
+      rsvpForm.style.display = 'none';
+      rsvpSuccess.style.display = 'block';
+
+      if (eventChoice === 'khong-the') {
+        rsvpSuccessText.textContent = `Gia đình đã nhận được phản hồi của bạn ${name}. Rất tiếc vì bạn không thể tới dự, gia đình xin chân thành cảm ơn tình cảm và sự quan tâm của bạn!`;
+      } else {
+        rsvpSuccessText.textContent = `Cảm ơn bạn ${name} đã xác nhận tham dự (${guests} người). Gia đình Trung Hiếu & Hoài Thương rất hân hạnh được đón tiếp bạn trong ngày vui!`;
+      }
+
+      // Kích hoạt hiệu ứng hoa giấy chúc mừng
+      createConfetti();
+    });
+  }
+
+  // ========================================================================
+  // 8. TRÌNH PHÁT NHẠC NỀN (MUSIC PLAYER & WEB AUDIO FALLBACK)
+  // ========================================================================
+  const audio = document.getElementById('weddingAudio');
+  const musicToggleBtn = document.getElementById('musicToggleBtn');
+  const musicStatusText = document.getElementById('musicStatusText');
+  let isPlaying = false;
+
+  function toggleMusic() {
+    if (!audio) return;
+    if (isPlaying) {
+      audio.pause();
+      musicToggleBtn.classList.remove('playing');
+      musicToggleBtn.textContent = '🎵';
+      if (musicStatusText) musicStatusText.textContent = 'Bật nhạc nền đám cưới';
+      isPlaying = false;
+    } else {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          musicToggleBtn.classList.add('playing');
+          musicToggleBtn.textContent = '🎶';
+          if (musicStatusText) musicStatusText.textContent = 'Tắt nhạc nền';
+          isPlaying = true;
+        }).catch(() => {
+          // Trình duyệt chặn hoặc lỗi file audio, sử dụng fallback synth
+          playChimeSound();
+          musicToggleBtn.classList.add('playing');
+          if (musicStatusText) musicStatusText.textContent = 'Đang phát giai điệu cưới';
+          isPlaying = true;
+        });
+      }
+    }
+  }
+
+  if (musicToggleBtn) {
+    musicToggleBtn.addEventListener('click', toggleMusic);
+  }
+
+  // Tự động phát nhạc khi người dùng tương tác lần đầu (Click bất kỳ)
+  function autoPlayOnFirstInteraction() {
+    if (!isPlaying && audio) {
+      audio.play().then(() => {
+        musicToggleBtn.classList.add('playing');
+        musicToggleBtn.textContent = '🎶';
+        if (musicStatusText) musicStatusText.textContent = 'Tắt nhạc nền';
+        isPlaying = true;
+      }).catch(() => {});
+    }
+    window.removeEventListener('click', autoPlayOnFirstInteraction);
+    window.removeEventListener('touchstart', autoPlayOnFirstInteraction);
+  }
+
+  window.addEventListener('click', autoPlayOnFirstInteraction, { once: true });
+  window.addEventListener('touchstart', autoPlayOnFirstInteraction, { once: true });
+
+  // Web Audio Fallback Synth Melody (giai điệu lãng mạn nhẹ)
+  function playChimeSound() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const notes = [261.63, 329.63, 392.00, 523.25]; // C E G C
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.4);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.4 + 1.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + i * 0.4);
+        osc.stop(ctx.currentTime + i * 0.4 + 1.2);
+      });
+    } catch (e) {}
+  }
+
+});
+
+// Hàm hỗ trợ Thả tim (Like) lời chúc
+function toggleLike(btn) {
+  const countSpan = btn.querySelector('.like-count');
+  let count = parseInt(countSpan.textContent, 10) || 0;
+  if (btn.classList.contains('liked')) {
+    btn.classList.remove('liked');
+    count = Math.max(0, count - 1);
+  } else {
+    btn.classList.add('liked');
+    count += 1;
+  }
+  countSpan.textContent = count;
+}
+
+// Hàm mã hóa chuỗi tránh XSS
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+// Hiệu ứng pháo hoa hoa giấy ăn mừng (Confetti Celebration)
+function createConfetti() {
+  const colors = ['#c5a059', '#dfbe7a', '#1a4d33', '#fae1a6', '#ffffff'];
+  for (let i = 0; i < 70; i++) {
+    const confetti = document.createElement('div');
+    confetti.style.position = 'fixed';
+    confetti.style.zIndex = '9999';
+    confetti.style.width = Math.random() * 8 + 6 + 'px';
+    confetti.style.height = Math.random() * 12 + 6 + 'px';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.top = '-20px';
+    confetti.style.opacity = Math.random() * 0.8 + 0.2;
+    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+    confetti.style.pointerEvents = 'none';
+    confetti.style.transition = `transform ${Math.random() * 2 + 2}s linear, top ${Math.random() * 2 + 2}s ease-in, opacity 2s ease-out`;
+
+    document.body.appendChild(confetti);
+
+    setTimeout(() => {
+      confetti.style.top = '105vh';
+      confetti.style.transform = `rotate(${Math.random() * 720}deg) translateX(${Math.random() * 100 - 50}px)`;
+      confetti.style.opacity = '0';
+    }, 20);
+
+    setTimeout(() => {
+      confetti.remove();
+    }, 4500);
+  }
+}
