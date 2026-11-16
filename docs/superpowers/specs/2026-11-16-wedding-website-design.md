@@ -117,3 +117,4 @@ Website đóng vai trò như một bức thiệp điện tử cao cấp, cung c�
   - IntersectionObserver cho hiệu ứng cuộn trang mềm mại (Scroll Reveal).
   - Canvas hiệu ứng hạt vàng lấp lánh & cánh hoa bay nhẹ nhàng, tối ưu hiệu năng 60 FPS.
   - Xử lý Audio phát nhạc thông minh (tự động phát khi tương tác hoặc toggle theo ý muốn người dùng).
+
