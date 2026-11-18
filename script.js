@@ -17,11 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function sendToGoogleSheet(payload) {
     if (!GOOGLE_SHEET_URL) {
       console.log('ℹ️ Google Sheet URL chưa cấu hình. Dữ liệu được lưu an toàn tại localStorage của trình duyệt.');
-      return;
+      return Promise.resolve();
     }
 
     try {
-      fetch(GOOGLE_SHEET_URL, {
+      return fetch(GOOGLE_SHEET_URL, {
         method: 'POST',
         mode: 'no-cors', // Chống lỗi chặn CORS khi gọi Google Apps Script Web App
         headers: {
@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     } catch (e) {
       console.warn('⚠️ Lỗi kết nối Google Sheets:', e);
+      return Promise.resolve();
     }
   }
 
@@ -499,6 +500,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Định dạng ngày giờ hiển thị trên thiệp chúc mừng gọn gàng, trang nhã
+  function formatWishDate(dateStr) {
+    if (!dateStr) return '';
+    const str = String(dateStr).trim();
+    if (str.includes('GMT')) {
+      try {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          const day = String(d.getDate()).padStart(2, '0');
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const year = d.getFullYear();
+          return `${day}/${month}/${year}`;
+        }
+      } catch (e) {}
+      return str.split(' GMT')[0].trim();
+    }
+    // Rút gọn định dạng HH:mm:ss dd/MM/yyyy thành HH:mm dd/MM/yyyy
+    return str.replace(/(\d{2}:\d{2}):\d{2}/, '$1');
+  }
+
+  let lastSubmittedWishTime = 0;
+
   // Tải danh sách lời chúc thực tế từ Google Sheet
   async function fetchWishesFromSheet() {
     if (!GOOGLE_SHEET_URL) {
@@ -507,13 +530,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch(GOOGLE_SHEET_URL);
+      // Thêm cacheBuster ngăn trình duyệt cache dữ liệu cũ
+      const cacheBuster = (GOOGLE_SHEET_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+      const res = await fetch(GOOGLE_SHEET_URL + cacheBuster);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
-          realWishes = data;
+          // Chuẩn hóa danh sách lời chúc từ Google Sheet
+          realWishes = data.map((item, idx) => ({
+            id: item.id || idx + 1,
+            name: item.name,
+            message: item.message,
+            date: formatWishDate(item.date),
+            likes: item.likes || 1,
+            isNew: idx === 0 && (Date.now() - lastSubmittedWishTime < 60000)
+          }));
           try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(realWishes));
           } catch (e) {}
           renderGuestbookCarousel();
         }
@@ -530,45 +563,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Xử lý gửi lời chúc mới
   if (guestbookForm) {
-    guestbookForm.addEventListener('submit', (e) => {
+    guestbookForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const nameInput = document.getElementById('gbName');
       const msgInput = document.getElementById('gbMessage');
+      const submitBtn = guestbookForm.querySelector('button[type="submit"]');
 
       const name = nameInput.value.trim();
       const msg = msgInput.value.trim();
 
       if (!name || !msg) return;
 
+      lastSubmittedWishTime = Date.now();
+      const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Đang gửi & tải lại...';
+      }
+
+      const nowTime = new Date();
+      const dateStr = `${String(nowTime.getHours()).padStart(2, '0')}:${String(nowTime.getMinutes()).padStart(2, '0')} ${String(nowTime.getDate()).padStart(2, '0')}/${String(nowTime.getMonth() + 1).padStart(2, '0')}/${nowTime.getFullYear()}`;
+
       const newWish = {
         id: Date.now(),
         name: name,
         message: msg,
-        date: new Date().toLocaleDateString('vi-VN'),
+        date: dateStr,
         likes: 1,
         isNew: true
       };
 
+      // 1. Cập nhật ngay lập tức giao diện (Optimistic UI) để người dùng thấy ngay lời chúc của mình ở trang 1
       realWishes.unshift(newWish);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(realWishes));
       } catch (err) {}
 
-      // Render lại Carousel ngay lập tức với lời chúc mới ở đầu trang 1
       renderGuestbookCarousel();
       scrollToPage(0);
 
-      // Gửi đồng bộ lên Google Sheets
-      sendToGoogleSheet({
-        type: 'Lời chúc',
-        name: name,
-        message: msg,
-        time: new Date().toLocaleString('vi-VN')
-      });
+      // Cuộn màn hình mượt mà đến ngay vị trí danh sách lời chúc để thấy lời chúc mới
+      const carouselContainer = document.querySelector('.guestbook-carousel-container');
+      if (carouselContainer) {
+        carouselContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
 
-      // Reset form & thông báo
+      // Kích hoạt pháo hoa chúc mừng
+      createConfetti();
+
+      // Reset form
       guestbookForm.reset();
-      alert('Cảm ơn bạn đã gửi lời chúc mừng ấm áp tới Trung Hiếu & Hoài Thương! Lời chúc của bạn đã được hiển thị trên trang web. 💕');
+
+      // 2. Gửi đồng bộ lên Google Sheets và tải lại danh sách mới nhất từ Sheet
+      try {
+        await sendToGoogleSheet({
+          type: 'Lời chúc',
+          name: name,
+          message: msg,
+          time: dateStr
+        });
+
+        // Đợi 1 giây để Google Apps Script hoàn tất ghi vào Sheet rồi fetch lại để đồng bộ chuẩn xác
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await fetchWishesFromSheet();
+        scrollToPage(0);
+      } catch (err) {
+        console.warn('Lỗi đồng bộ lời chúc:', err);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHtml;
+        }
+      }
     });
   }
 
