@@ -458,47 +458,25 @@
           </form>
         </div>
 
-        <!-- Danh sách lời chúc hiển thị sinh động -->
-        <div class="guestbook-messages" id="guestbookMessages">
-          <!-- Tin nhắn mẫu 1 -->
-          <div class="wish-card reveal stagger-1">
-            <div class="wish-header">
-              <span class="wish-author">Anh Hoàng & Chị Mai</span>
-              <span class="wish-date">10/11/2026</span>
+        <!-- Danh sách lời chúc hiển thị dạng Carousel 6 cái mỗi trang, lướt mượt mà -->
+        <div class="guestbook-carousel-container reveal">
+          <div class="guestbook-meta-bar">
+            <span class="guestbook-count-badge" id="guestbookCountBadge">12 Lời chúc phúc</span>
+            <div class="guestbook-page-indicator">
+              <span id="guestbookCurrentPage">Trang 1</span> / <span id="guestbookTotalPages">2</span>
             </div>
-            <p class="wish-body">Chúc mừng hạnh phúc đôi bạn trẻ Trung Hiếu & Hoài Thương! Chúc hai em có một hành trình hôn nhân ngập tràn tiếng cười, luôn yêu thương và cùng nhau xây đắp tổ ấm vững bền!</p>
-            <button class="wish-like-btn" onclick="toggleLike(this)">♥ <span class="like-count">18</span> Yêu thích</button>
           </div>
 
-          <!-- Tin nhắn mẫu 2 -->
-          <div class="wish-card reveal stagger-2">
-            <div class="wish-header">
-              <span class="wish-author">Hội Bạn Thân Đông Anh</span>
-              <span class="wish-date">12/11/2026</span>
+          <div class="guestbook-slider-wrapper">
+            <button class="guestbook-arrow prev" id="gbPrevBtn" aria-label="Xem lời chúc trang trước">‹</button>
+            <div class="guestbook-slider-track" id="guestbookSliderTrack">
+              <!-- Sẽ được render động qua JavaScript: 6 lời chúc trên mỗi trang/slide -->
             </div>
-            <p class="wish-body">Cuối cùng ngày này cũng tới! Chúc cô dâu Hoài Thương luôn xinh đẹp rạng rỡ và chú rể Trung Hiếu luôn là người đàn ông tuyệt vời nhất. Hẹn gặp cả hai ở bữa cơm 28/11 nhé!</p>
-            <button class="wish-like-btn liked" onclick="toggleLike(this)">♥ <span class="like-count">25</span> Yêu thích</button>
+            <button class="guestbook-arrow next" id="gbNextBtn" aria-label="Xem lời chúc trang tiếp theo">›</button>
           </div>
 
-          <!-- Tin nhắn mẫu 3 -->
-          <div class="wish-card reveal stagger-3">
-            <div class="wish-header">
-              <span class="wish-author">Chú Bảy & Gia đình</span>
-              <span class="wish-date">14/11/2026</span>
-            </div>
-            <p class="wish-body">Mừng ngày vui của hai cháu và hai gia đình! Chúc hai cháu trăm năm tình viên mãn, bạc đầu nghĩa phu thê, sớm có quý tử và gia đạo luôn an khang thịnh vượng!</p>
-            <button class="wish-like-btn" onclick="toggleLike(this)">♥ <span class="like-count">12</span> Yêu thích</button>
-          </div>
-
-          <!-- Tin nhắn mẫu 4 -->
-          <div class="wish-card reveal stagger-4">
-            <div class="wish-header">
-              <span class="wish-author">Em Thùy Linh</span>
-              <span class="wish-date">15/11/2026</span>
-            </div>
-            <p class="wish-body">Ngắm thiệp cưới của anh chị mặc cổ phục đẹp xuất sắc luôn ạ! Chúc anh chị một ngày cưới thật trọn vẹn và một đời hạnh phúc bình yên bên nhau!</p>
-            <button class="wish-like-btn" onclick="toggleLike(this)">♥ <span class="like-count">16</span> Yêu thích</button>
-          </div>
+          <!-- Các chấm tròn phân trang (Pagination Dots) -->
+          <div class="guestbook-dots" id="guestbookDots"></div>
         </div>
       </div>
     </div>

@@ -338,13 +338,108 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ========================================================================
-  // 6. SỔ LƯU BÚT ONLINE VỚI LOCALSTORAGE (GUESTBOOK)
+  // 6. SỔ LƯU BÚT ONLINE - CAROUSEL 6 LỜI CHÚC MỖI TRANG (GUESTBOOK)
   // ========================================================================
   const guestbookForm = document.getElementById('guestbookForm');
-  const guestbookMessages = document.getElementById('guestbookMessages');
+  const guestbookSliderTrack = document.getElementById('guestbookSliderTrack');
+  const guestbookDots = document.getElementById('guestbookDots');
+  const guestbookCountBadge = document.getElementById('guestbookCountBadge');
+  const guestbookCurrentPageEl = document.getElementById('guestbookCurrentPage');
+  const guestbookTotalPagesEl = document.getElementById('guestbookTotalPages');
+  const gbPrevBtn = document.getElementById('gbPrevBtn');
+  const gbNextBtn = document.getElementById('gbNextBtn');
 
-  // Đọc danh sách lời chúc đã lưu từ localStorage
   const STORAGE_KEY = 'wedding_wishes_th_ht';
+  const ITEMS_PER_PAGE = 6;
+
+  // Danh sách 12 lời chúc mẫu mặc định ý nghĩa cho Trung Hiếu & Hoài Thương
+  const DEFAULT_WISHES = [
+    {
+      id: 1,
+      name: 'Anh Hoàng & Chị Mai',
+      date: '10/11/2026',
+      message: 'Chúc mừng hạnh phúc đôi bạn trẻ Trung Hiếu & Hoài Thương! Chúc hai em có một hành trình hôn nhân ngập tràn tiếng cười, luôn yêu thương và cùng nhau xây đắp tổ ấm vững bền!',
+      likes: 18
+    },
+    {
+      id: 2,
+      name: 'Hội Bạn Thân Đông Anh',
+      date: '12/11/2026',
+      message: 'Cuối cùng ngày này cũng tới! Chúc cô dâu Hoài Thương luôn xinh đẹp rạng rỡ và chú rể Trung Hiếu luôn là người đàn ông tuyệt vời nhất. Hẹn gặp cả hai ở bữa cơm 28/11 nhé!',
+      likes: 25
+    },
+    {
+      id: 3,
+      name: 'Chú Bảy & Gia đình',
+      date: '14/11/2026',
+      message: 'Mừng ngày vui của hai cháu và hai gia đình! Chúc hai cháu trăm năm tình viên mãn, bạc đầu nghĩa phu thê, sớm có quý tử và gia đạo luôn an khang thịnh vượng!',
+      likes: 12
+    },
+    {
+      id: 4,
+      name: 'Em Thùy Linh',
+      date: '15/11/2026',
+      message: 'Ngắm thiệp cưới của anh chị mặc cổ phục đẹp xuất sắc luôn ạ! Chúc anh chị một ngày cưới thật trọn vẹn và một đời hạnh phúc bình yên bên nhau!',
+      likes: 16
+    },
+    {
+      id: 5,
+      name: 'Bác Hải & Bác Lan',
+      date: '16/11/2026',
+      message: 'Chúc mừng hai bên gia đình ông Thuyết, bà Tám và bà Cúc. Chúc đôi trẻ Trung Hiếu - Hoài Thương sắt son gắn bó, đồng lòng tát biển Đông cũng cạn!',
+      likes: 20
+    },
+    {
+      id: 6,
+      name: 'Nhóm Đồng Nghiệp',
+      date: '16/11/2026',
+      message: 'Chúc mừng Trung Hiếu đã rước được nàng thơ Hoài Thương về dinh! Chúc hai bạn trăm năm hạnh phúc, sự nghiệp thăng hoa, gia đình viên mãn!',
+      likes: 31
+    },
+    {
+      id: 7,
+      name: 'Bạn Thu Hà (Bạn thân cô dâu)',
+      date: '17/11/2026',
+      message: 'Thương ơi, thấy cậu tìm được bến đỗ bình yên bên anh Hiếu mình mừng phát khóc. Chúc bạn thân của mình luôn là người phụ nữ hạnh phúc nhất thế gian!',
+      likes: 28
+    },
+    {
+      id: 8,
+      name: 'Anh Tuấn & Minh Trang',
+      date: '17/11/2026',
+      message: 'Một đám cưới đẹp như mơ! Chúc Hiếu và Thương trọn vẹn nghĩa phu thê, tay nắm chặt tay vượt qua mọi thăng trầm cuộc sống!',
+      likes: 15
+    },
+    {
+      id: 9,
+      name: 'Cô Ba (Họ nhà gái)',
+      date: '18/11/2026',
+      message: 'Nhìn hai cháu đẹp đôi, xứng lứa vừa đôi lắm. Chúc hai cháu luôn yêu thương, nhường nhịn nhau và sớm cho gia đình bế cháu bồng nhé!',
+      likes: 19
+    },
+    {
+      id: 10,
+      name: 'Gia đình anh Đức (Bắc Ninh)',
+      date: '18/11/2026',
+      message: 'Chúc mừng hạnh phúc hai em! Chúc hai em luôn giữ lửa yêu thương như ngày đầu, gia đình thuận hòa, tấn tài tấn lộc!',
+      likes: 14
+    },
+    {
+      id: 11,
+      name: 'Bạn Minh Quân',
+      date: '18/11/2026',
+      message: 'Chúc mừng chú rể Trung Hiếu! Mong cậu luôn yêu thương, trân trọng cô dâu Hoài Thương. Chúc hai bạn hạnh phúc trọn vẹn suốt một đời!',
+      likes: 22
+    },
+    {
+      id: 12,
+      name: 'Em Khánh An',
+      date: '18/11/2026',
+      message: 'Chúc anh chị một ngày trọng đại thật ý nghĩa và một cuộc sống hôn nhân viên mãn, ngập tràn niềm vui và tiếng cười!',
+      likes: 17
+    }
+  ];
+
   function getSavedWishes() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -354,46 +449,129 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function saveWish(name, message) {
-    const wishes = getSavedWishes();
-    const newWish = {
-      id: Date.now(),
-      name: name,
-      message: message,
-      date: new Date().toLocaleDateString('vi-VN'),
-      likes: 1
-    };
-    wishes.unshift(newWish);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(wishes));
-    } catch (e) {}
-    return newWish;
+  function getAllWishes() {
+    const userWishes = getSavedWishes();
+    return [...userWishes, ...DEFAULT_WISHES];
   }
 
-  // Render các lời chúc lưu trữ lên đầu
-  const userWishes = getSavedWishes();
-  userWishes.forEach(wish => {
-    renderWishCard(wish, false);
-  });
+  function renderGuestbookCarousel() {
+    if (!guestbookSliderTrack) return;
 
-  function renderWishCard(wish, prepend = true) {
-    const card = document.createElement('div');
-    card.className = 'wish-card reveal active';
-    card.innerHTML = `
-      <div class="wish-header">
-        <span class="wish-author">${escapeHTML(wish.name)}</span>
-        <span class="wish-date">${wish.date}</span>
-      </div>
-      <p class="wish-body">${escapeHTML(wish.message)}</p>
-      <button class="wish-like-btn" onclick="toggleLike(this)">♥ <span class="like-count">${wish.likes || 1}</span> Yêu thích</button>
-    `;
-    if (prepend && guestbookMessages.firstChild) {
-      guestbookMessages.insertBefore(card, guestbookMessages.firstChild);
-    } else {
-      guestbookMessages.appendChild(card);
+    const allWishes = getAllWishes();
+    const totalPages = Math.max(1, Math.ceil(allWishes.length / ITEMS_PER_PAGE));
+
+    if (guestbookCountBadge) {
+      guestbookCountBadge.textContent = `${allWishes.length} Lời chúc phúc`;
+    }
+    if (guestbookTotalPagesEl) {
+      guestbookTotalPagesEl.textContent = totalPages;
+    }
+
+    guestbookSliderTrack.innerHTML = '';
+
+    for (let page = 0; page < totalPages; page++) {
+      const slide = document.createElement('div');
+      slide.className = 'guestbook-slide';
+      slide.setAttribute('data-page-index', page);
+
+      const pageWishes = allWishes.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
+
+      pageWishes.forEach(wish => {
+        const card = document.createElement('div');
+        card.className = 'wish-card';
+        if (wish.isNew) {
+          card.style.borderColor = 'var(--gold-primary)';
+          card.style.boxShadow = '0 0 15px rgba(197, 160, 89, 0.35)';
+        }
+
+        card.innerHTML = `
+          <div class="wish-header">
+            <div>
+              <span class="wish-author">${escapeHTML(wish.name)}</span>
+              ${wish.isNew ? '<span class="wish-badge-new">Mới nhất</span>' : ''}
+            </div>
+            <span class="wish-date">${wish.date}</span>
+          </div>
+          <p class="wish-body">${escapeHTML(wish.message)}</p>
+          <button class="wish-like-btn" onclick="toggleLike(this)">♥ <span class="like-count">${wish.likes || 1}</span> Yêu thích</button>
+        `;
+        slide.appendChild(card);
+      });
+
+      guestbookSliderTrack.appendChild(slide);
+    }
+
+    // Render các chấm phân trang (Dots)
+    if (guestbookDots) {
+      guestbookDots.innerHTML = '';
+      for (let p = 0; p < totalPages; p++) {
+        const dot = document.createElement('div');
+        dot.className = `guestbook-dot ${p === 0 ? 'active' : ''}`;
+        dot.setAttribute('data-page', p);
+        dot.addEventListener('click', () => {
+          scrollToPage(p);
+        });
+        guestbookDots.appendChild(dot);
+      }
     }
   }
 
+  function scrollToPage(pageIndex) {
+    if (!guestbookSliderTrack) return;
+    const slideWidth = guestbookSliderTrack.offsetWidth;
+    guestbookSliderTrack.scrollTo({
+      left: pageIndex * slideWidth,
+      behavior: 'smooth'
+    });
+    updateActivePage(pageIndex);
+  }
+
+  function updateActivePage(pageIndex) {
+    if (guestbookCurrentPageEl) {
+      guestbookCurrentPageEl.textContent = `Trang ${pageIndex + 1}`;
+    }
+    if (guestbookDots) {
+      const dots = guestbookDots.querySelectorAll('.guestbook-dot');
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === pageIndex);
+      });
+    }
+  }
+
+  // Lắng nghe thao tác lướt (Scroll Snap / Swipe) để cập nhật trang hiện tại
+  if (guestbookSliderTrack) {
+    let scrollTimeout;
+    guestbookSliderTrack.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const slideWidth = guestbookSliderTrack.offsetWidth || 1;
+        const page = Math.round(guestbookSliderTrack.scrollLeft / slideWidth);
+        updateActivePage(page);
+      }, 60);
+    }, { passive: true });
+  }
+
+  // Nút lướt sang trang trước / sau
+  if (gbPrevBtn) {
+    gbPrevBtn.addEventListener('click', () => {
+      if (!guestbookSliderTrack) return;
+      const slideWidth = guestbookSliderTrack.offsetWidth;
+      guestbookSliderTrack.scrollBy({ left: -slideWidth, behavior: 'smooth' });
+    });
+  }
+
+  if (gbNextBtn) {
+    gbNextBtn.addEventListener('click', () => {
+      if (!guestbookSliderTrack) return;
+      const slideWidth = guestbookSliderTrack.offsetWidth;
+      guestbookSliderTrack.scrollBy({ left: slideWidth, behavior: 'smooth' });
+    });
+  }
+
+  // Khởi tạo hiển thị ban đầu
+  renderGuestbookCarousel();
+
+  // Xử lý gửi lời chúc mới
   if (guestbookForm) {
     guestbookForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -405,8 +583,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!name || !msg) return;
 
-      const saved = saveWish(name, msg);
-      renderWishCard(saved, true);
+      const userWishes = getSavedWishes();
+      const newWish = {
+        id: Date.now(),
+        name: name,
+        message: msg,
+        date: new Date().toLocaleDateString('vi-VN'),
+        likes: 1,
+        isNew: true
+      };
+
+      userWishes.unshift(newWish);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(userWishes));
+      } catch (err) {}
+
+      // Render lại Carousel với 6 lời chúc mới nhất trên trang 1
+      renderGuestbookCarousel();
+      scrollToPage(0);
 
       // Gửi đồng bộ lên Google Sheets
       sendToGoogleSheet({
@@ -418,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Reset form & thông báo
       guestbookForm.reset();
-      alert('Cảm ơn bạn đã gửi lời chúc mừng ấm áp tới Trung Hiếu & Hoài Thương! 💕');
+      alert('Cảm ơn bạn đã gửi lời chúc mừng ấm áp tới Trung Hiếu & Hoài Thương! Lời chúc của bạn đã được hiển thị ở vị trí đầu tiên. 💕');
     });
   }
 
@@ -485,46 +679,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const openInvitationBtn = document.getElementById('openInvitationBtn');
   let isPlaying = false;
 
-  async function startMusic() {
-    if (isPlaying || !audio) return;
-    try {
-      await audio.play();
-      isPlaying = true;
-      if (musicToggleBtn) {
+  function setPlayingState(playing) {
+    isPlaying = playing;
+    if (musicToggleBtn) {
+      if (playing) {
         musicToggleBtn.classList.add('playing');
         musicToggleBtn.textContent = '🎶';
+      } else {
+        musicToggleBtn.classList.remove('playing');
+        musicToggleBtn.textContent = '🎵';
       }
-      if (musicStatusText) musicStatusText.textContent = 'Tắt nhạc nền';
-      removeAutoplayListeners();
-    } catch (e) {
-      // Nếu file mp3 bị chặn hoặc lỗi, chạy Web Audio API fallback
-      playChimeSound();
-      isPlaying = true;
-      if (musicToggleBtn) {
-        musicToggleBtn.classList.add('playing');
-        musicToggleBtn.textContent = '🎶';
-      }
-      if (musicStatusText) musicStatusText.textContent = 'Đang phát giai điệu cưới';
-      removeAutoplayListeners();
+    }
+    if (musicStatusText) {
+      musicStatusText.textContent = playing ? 'Tắt nhạc nền' : 'Bật nhạc nền đám cưới';
     }
   }
 
-  function stopMusic() {
-    if (!isPlaying || !audio) return;
+  function playAudio() {
+    if (!audio) return Promise.reject();
+    return audio.play().then(() => {
+      setPlayingState(true);
+      removeAutoplayListeners();
+    });
+  }
+
+  function pauseAudio() {
+    if (!audio) return;
     audio.pause();
-    isPlaying = false;
-    if (musicToggleBtn) {
-      musicToggleBtn.classList.remove('playing');
-      musicToggleBtn.textContent = '🎵';
-    }
-    if (musicStatusText) musicStatusText.textContent = 'Bật nhạc nền đám cưới';
+    setPlayingState(false);
   }
 
   function toggleMusic() {
     if (isPlaying) {
-      stopMusic();
+      pauseAudio();
     } else {
-      startMusic();
+      playAudio().catch(() => {
+        playChimeSound();
+        setPlayingState(true);
+      });
     }
   }
 
@@ -536,14 +728,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function unlockAndOpen() {
-    startMusic();
+    playAudio().catch(() => {
+      // Fallback nếu mp3 bị chặn
+      playChimeSound();
+      setPlayingState(true);
+    });
+
     if (gate && !gate.classList.contains('opened')) {
       gate.classList.add('opened');
       createConfetti();
       setTimeout(() => {
         gate.style.display = 'none';
-      }, 900);
+      }, 750);
     }
+    removeAutoplayListeners();
   }
 
   if (openInvitationBtn) {
@@ -554,15 +752,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (gate) {
-    gate.addEventListener('click', unlockAndOpen);
+    gate.addEventListener('click', () => {
+      unlockAndOpen();
+    });
   }
 
-  // Thử phát nhạc ngay lập tức nếu trình duyệt cho phép autoplay
-  startMusic().then(() => {
-    if (isPlaying && gate) {
-      unlockAndOpen();
-    }
-  }).catch(() => {});
+  // Thử phát nhạc ngay lập tức khi mở web
+  if (audio) {
+    audio.play().then(() => {
+      // Trình duyệt cho phép autoplay
+      setPlayingState(true);
+      if (gate) {
+        gate.classList.add('opened');
+        setTimeout(() => { gate.style.display = 'none'; }, 600);
+      }
+    }).catch(() => {
+      // Trình duyệt chặn autoplay khi chưa chạm màn hình:
+      // Giữ đúng trạng thái chưa phát và để màn mở thiệp đón người dùng chạm mở
+      setPlayingState(false);
+    });
+  }
 
   // Bắt mọi cử chỉ đầu tiên của người dùng trên toàn màn hình để phát nhạc ngay
   const gestureEvents = ['pointerdown', 'touchstart', 'click', 'keydown', 'scroll'];
