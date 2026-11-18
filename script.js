@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Khi bạn tạo Google Apps Script theo hướng dẫn tại GOOGLE_SHEETS_SETUP.md,
   // chỉ cần dán URL Web App của bạn vào đây:
   // ========================================================================
-  const GOOGLE_SHEET_URL = ''; // Ví dụ: 'https://script.google.com/macros/s/AKfycb.../exec'
+  const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyDftZTyg9sVQpJ7K5RdbfqnDNo8cPRzNQVAimzmDmWvWKTtxKFt2aI9hIaLi36CCTR/exec'; // Ví dụ: 'https://script.google.com/macros/s/AKfycb.../exec'
 
   function sendToGoogleSheet(payload) {
     if (!GOOGLE_SHEET_URL) {
@@ -352,94 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const STORAGE_KEY = 'wedding_wishes_th_ht';
   const ITEMS_PER_PAGE = 6;
 
-  // Danh sách 12 lời chúc mẫu mặc định ý nghĩa cho Trung Hiếu & Hoài Thương
-  const DEFAULT_WISHES = [
-    {
-      id: 1,
-      name: 'Anh Hoàng & Chị Mai',
-      date: '10/11/2026',
-      message: 'Chúc mừng hạnh phúc đôi bạn trẻ Trung Hiếu & Hoài Thương! Chúc hai em có một hành trình hôn nhân ngập tràn tiếng cười, luôn yêu thương và cùng nhau xây đắp tổ ấm vững bền!',
-      likes: 18
-    },
-    {
-      id: 2,
-      name: 'Hội Bạn Thân Đông Anh',
-      date: '12/11/2026',
-      message: 'Cuối cùng ngày này cũng tới! Chúc cô dâu Hoài Thương luôn xinh đẹp rạng rỡ và chú rể Trung Hiếu luôn là người đàn ông tuyệt vời nhất. Hẹn gặp cả hai ở bữa cơm 28/11 nhé!',
-      likes: 25
-    },
-    {
-      id: 3,
-      name: 'Chú Bảy & Gia đình',
-      date: '14/11/2026',
-      message: 'Mừng ngày vui của hai cháu và hai gia đình! Chúc hai cháu trăm năm tình viên mãn, bạc đầu nghĩa phu thê, sớm có quý tử và gia đạo luôn an khang thịnh vượng!',
-      likes: 12
-    },
-    {
-      id: 4,
-      name: 'Em Thùy Linh',
-      date: '15/11/2026',
-      message: 'Ngắm thiệp cưới của anh chị mặc cổ phục đẹp xuất sắc luôn ạ! Chúc anh chị một ngày cưới thật trọn vẹn và một đời hạnh phúc bình yên bên nhau!',
-      likes: 16
-    },
-    {
-      id: 5,
-      name: 'Bác Hải & Bác Lan',
-      date: '16/11/2026',
-      message: 'Chúc mừng hai bên gia đình ông Thuyết, bà Tám và bà Cúc. Chúc đôi trẻ Trung Hiếu - Hoài Thương sắt son gắn bó, đồng lòng tát biển Đông cũng cạn!',
-      likes: 20
-    },
-    {
-      id: 6,
-      name: 'Nhóm Đồng Nghiệp',
-      date: '16/11/2026',
-      message: 'Chúc mừng Trung Hiếu đã rước được nàng thơ Hoài Thương về dinh! Chúc hai bạn trăm năm hạnh phúc, sự nghiệp thăng hoa, gia đình viên mãn!',
-      likes: 31
-    },
-    {
-      id: 7,
-      name: 'Bạn Thu Hà (Bạn thân cô dâu)',
-      date: '17/11/2026',
-      message: 'Thương ơi, thấy cậu tìm được bến đỗ bình yên bên anh Hiếu mình mừng phát khóc. Chúc bạn thân của mình luôn là người phụ nữ hạnh phúc nhất thế gian!',
-      likes: 28
-    },
-    {
-      id: 8,
-      name: 'Anh Tuấn & Minh Trang',
-      date: '17/11/2026',
-      message: 'Một đám cưới đẹp như mơ! Chúc Hiếu và Thương trọn vẹn nghĩa phu thê, tay nắm chặt tay vượt qua mọi thăng trầm cuộc sống!',
-      likes: 15
-    },
-    {
-      id: 9,
-      name: 'Cô Ba (Họ nhà gái)',
-      date: '18/11/2026',
-      message: 'Nhìn hai cháu đẹp đôi, xứng lứa vừa đôi lắm. Chúc hai cháu luôn yêu thương, nhường nhịn nhau và sớm cho gia đình bế cháu bồng nhé!',
-      likes: 19
-    },
-    {
-      id: 10,
-      name: 'Gia đình anh Đức (Bắc Ninh)',
-      date: '18/11/2026',
-      message: 'Chúc mừng hạnh phúc hai em! Chúc hai em luôn giữ lửa yêu thương như ngày đầu, gia đình thuận hòa, tấn tài tấn lộc!',
-      likes: 14
-    },
-    {
-      id: 11,
-      name: 'Bạn Minh Quân',
-      date: '18/11/2026',
-      message: 'Chúc mừng chú rể Trung Hiếu! Mong cậu luôn yêu thương, trân trọng cô dâu Hoài Thương. Chúc hai bạn hạnh phúc trọn vẹn suốt một đời!',
-      likes: 22
-    },
-    {
-      id: 12,
-      name: 'Em Khánh An',
-      date: '18/11/2026',
-      message: 'Chúc anh chị một ngày trọng đại thật ý nghĩa và một cuộc sống hôn nhân viên mãn, ngập tràn niềm vui và tiếng cười!',
-      likes: 17
-    }
-  ];
-
   function getSavedWishes() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -449,15 +361,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function getAllWishes() {
-    const userWishes = getSavedWishes();
-    return [...userWishes, ...DEFAULT_WISHES];
-  }
+  // Chỉ hiển thị lời chúc thực tế từ Google Sheet hoặc do khách gửi trực tiếp
+  let realWishes = getSavedWishes();
 
   function renderGuestbookCarousel() {
     if (!guestbookSliderTrack) return;
 
-    const allWishes = getAllWishes();
+    if (!realWishes || realWishes.length === 0) {
+      if (guestbookCountBadge) guestbookCountBadge.textContent = '0 Lời chúc phúc';
+      if (guestbookCurrentPageEl) guestbookCurrentPageEl.textContent = 'Trang 0';
+      if (guestbookTotalPagesEl) guestbookTotalPagesEl.textContent = '0';
+      if (gbPrevBtn) gbPrevBtn.style.display = 'none';
+      if (gbNextBtn) gbNextBtn.style.display = 'none';
+      if (guestbookDots) guestbookDots.innerHTML = '';
+
+      guestbookSliderTrack.innerHTML = `
+        <div style="width: 100%; padding: 40px 20px; text-align: center; background: #ffffff; border: 1px dashed var(--gold-border); border-radius: var(--radius-md);">
+          <div style="font-size: 2.2rem; margin-bottom: 8px;">💌</div>
+          <h3 style="font-size: 1.3rem; color: var(--emerald-800); margin-bottom: 6px;">Chưa Có Lời Chúc Nào</h3>
+          <p style="font-size: 0.95rem; color: var(--text-muted); max-width: 480px; margin: 0 auto;">Hãy là người đầu tiên gửi những lời chúc phúc tốt đẹp nhất tới đôi bạn trẻ Trung Hiếu & Hoài Thương ở ô bên trên nhé!</p>
+        </div>
+      `;
+      return;
+    }
+
+    if (gbPrevBtn) gbPrevBtn.style.display = '';
+    if (gbNextBtn) gbNextBtn.style.display = '';
+
+    const allWishes = realWishes;
     const totalPages = Math.max(1, Math.ceil(allWishes.length / ITEMS_PER_PAGE));
 
     if (guestbookCountBadge) {
@@ -568,8 +499,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Khởi tạo hiển thị ban đầu
+  // Tải danh sách lời chúc thực tế từ Google Sheet
+  async function fetchWishesFromSheet() {
+    if (!GOOGLE_SHEET_URL) {
+      renderGuestbookCarousel();
+      return;
+    }
+
+    try {
+      const res = await fetch(GOOGLE_SHEET_URL);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          realWishes = data;
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          } catch (e) {}
+          renderGuestbookCarousel();
+        }
+      }
+    } catch (err) {
+      console.warn('Chưa thể tải lời chúc từ Google Sheet:', err);
+      renderGuestbookCarousel();
+    }
+  }
+
+  // Khởi tạo hiển thị ban đầu và đồng bộ từ Google Sheet
   renderGuestbookCarousel();
+  fetchWishesFromSheet();
 
   // Xử lý gửi lời chúc mới
   if (guestbookForm) {
@@ -583,7 +540,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!name || !msg) return;
 
-      const userWishes = getSavedWishes();
       const newWish = {
         id: Date.now(),
         name: name,
@@ -593,12 +549,12 @@ document.addEventListener('DOMContentLoaded', () => {
         isNew: true
       };
 
-      userWishes.unshift(newWish);
+      realWishes.unshift(newWish);
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(userWishes));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(realWishes));
       } catch (err) {}
 
-      // Render lại Carousel với 6 lời chúc mới nhất trên trang 1
+      // Render lại Carousel ngay lập tức với lời chúc mới ở đầu trang 1
       renderGuestbookCarousel();
       scrollToPage(0);
 
@@ -612,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Reset form & thông báo
       guestbookForm.reset();
-      alert('Cảm ơn bạn đã gửi lời chúc mừng ấm áp tới Trung Hiếu & Hoài Thương! Lời chúc của bạn đã được hiển thị ở vị trí đầu tiên. 💕');
+      alert('Cảm ơn bạn đã gửi lời chúc mừng ấm áp tới Trung Hiếu & Hoài Thương! Lời chúc của bạn đã được hiển thị trên trang web. 💕');
     });
   }
 
@@ -641,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const rsvpData = { name, phone, guests, note, eventChoice, eventText, time: new Date().toISOString() };
       try {
         localStorage.setItem('wedding_rsvp_' + phone, JSON.stringify(rsvpData));
-      } catch (err) {}
+      } catch (err) { }
 
       // Gửi đồng bộ lên Google Sheets
       sendToGoogleSheet({
@@ -817,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
         osc.start(ctx.currentTime + i * 0.4);
         osc.stop(ctx.currentTime + i * 0.4 + 1.2);
       });
-    } catch (e) {}
+    } catch (e) { }
   }
 
 });
@@ -838,7 +794,7 @@ function toggleLike(btn) {
 
 // Hàm mã hóa chuỗi tránh XSS
 function escapeHTML(str) {
-  return str.replace(/[&<>'"]/g, 
+  return str.replace(/[&<>'"]/g,
     tag => ({
       '&': '&amp;',
       '<': '&lt;',

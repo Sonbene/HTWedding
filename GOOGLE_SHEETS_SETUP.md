@@ -110,8 +110,43 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({ status: 'active', message: 'Wedding Webhook Ready' }))
-    .setMimeType(ContentService.MimeType.JSON);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var wishSheet = ss.getSheetByName('Lời Chúc');
+    if (!wishSheet) {
+      return ContentService.createTextOutput(JSON.stringify([]))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var rows = wishSheet.getDataRange().getValues();
+    var wishes = [];
+    
+    // Đọc từ hàng thứ 2 (bỏ qua dòng tiêu đề)
+    for (var i = 1; i < rows.length; i++) {
+      var row = rows[i];
+      var time = row[0];
+      var name = row[1];
+      var message = row[2];
+      
+      if (name && message) {
+        wishes.push({
+          id: i,
+          name: name.toString(),
+          message: message.toString(),
+          date: time ? time.toString() : ''
+        });
+      }
+    }
+    
+    // Đảo ngược mảng để lời chúc mới nhất hiển thị lên đầu tiên
+    wishes.reverse();
+    
+    return ContentService.createTextOutput(JSON.stringify(wishes))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify([]))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 ```
 
