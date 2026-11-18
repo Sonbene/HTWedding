@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'POST',
         mode: 'no-cors', // Chống lỗi chặn CORS khi gọi Google Apps Script Web App
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain;charset=utf-8',
         },
         body: JSON.stringify(payload)
       }).then(() => {
