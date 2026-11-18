@@ -476,60 +476,109 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ========================================================================
-  // 8. TRÌNH PHÁT NHẠC NỀN (MUSIC PLAYER & WEB AUDIO FALLBACK)
+  // 8. TRÌNH PHÁT NHẠC NỀN & MÀN MỞ THIỆP (AUTOPLAY MUSIC GATEWAY)
   // ========================================================================
   const audio = document.getElementById('weddingAudio');
   const musicToggleBtn = document.getElementById('musicToggleBtn');
   const musicStatusText = document.getElementById('musicStatusText');
+  const gate = document.getElementById('invitationGate');
+  const openInvitationBtn = document.getElementById('openInvitationBtn');
   let isPlaying = false;
 
-  function toggleMusic() {
-    if (!audio) return;
-    if (isPlaying) {
-      audio.pause();
+  async function startMusic() {
+    if (isPlaying || !audio) return;
+    try {
+      await audio.play();
+      isPlaying = true;
+      if (musicToggleBtn) {
+        musicToggleBtn.classList.add('playing');
+        musicToggleBtn.textContent = '🎶';
+      }
+      if (musicStatusText) musicStatusText.textContent = 'Tắt nhạc nền';
+      removeAutoplayListeners();
+    } catch (e) {
+      // Nếu file mp3 bị chặn hoặc lỗi, chạy Web Audio API fallback
+      playChimeSound();
+      isPlaying = true;
+      if (musicToggleBtn) {
+        musicToggleBtn.classList.add('playing');
+        musicToggleBtn.textContent = '🎶';
+      }
+      if (musicStatusText) musicStatusText.textContent = 'Đang phát giai điệu cưới';
+      removeAutoplayListeners();
+    }
+  }
+
+  function stopMusic() {
+    if (!isPlaying || !audio) return;
+    audio.pause();
+    isPlaying = false;
+    if (musicToggleBtn) {
       musicToggleBtn.classList.remove('playing');
       musicToggleBtn.textContent = '🎵';
-      if (musicStatusText) musicStatusText.textContent = 'Bật nhạc nền đám cưới';
-      isPlaying = false;
+    }
+    if (musicStatusText) musicStatusText.textContent = 'Bật nhạc nền đám cưới';
+  }
+
+  function toggleMusic() {
+    if (isPlaying) {
+      stopMusic();
     } else {
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          musicToggleBtn.classList.add('playing');
-          musicToggleBtn.textContent = '🎶';
-          if (musicStatusText) musicStatusText.textContent = 'Tắt nhạc nền';
-          isPlaying = true;
-        }).catch(() => {
-          // Trình duyệt chặn hoặc lỗi file audio, sử dụng fallback synth
-          playChimeSound();
-          musicToggleBtn.classList.add('playing');
-          if (musicStatusText) musicStatusText.textContent = 'Đang phát giai điệu cưới';
-          isPlaying = true;
-        });
-      }
+      startMusic();
     }
   }
 
   if (musicToggleBtn) {
-    musicToggleBtn.addEventListener('click', toggleMusic);
+    musicToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMusic();
+    });
   }
 
-  // Tự động phát nhạc khi người dùng tương tác lần đầu (Click bất kỳ)
-  function autoPlayOnFirstInteraction() {
-    if (!isPlaying && audio) {
-      audio.play().then(() => {
-        musicToggleBtn.classList.add('playing');
-        musicToggleBtn.textContent = '🎶';
-        if (musicStatusText) musicStatusText.textContent = 'Tắt nhạc nền';
-        isPlaying = true;
-      }).catch(() => {});
+  function unlockAndOpen() {
+    startMusic();
+    if (gate && !gate.classList.contains('opened')) {
+      gate.classList.add('opened');
+      createConfetti();
+      setTimeout(() => {
+        gate.style.display = 'none';
+      }, 900);
     }
-    window.removeEventListener('click', autoPlayOnFirstInteraction);
-    window.removeEventListener('touchstart', autoPlayOnFirstInteraction);
   }
 
-  window.addEventListener('click', autoPlayOnFirstInteraction, { once: true });
-  window.addEventListener('touchstart', autoPlayOnFirstInteraction, { once: true });
+  if (openInvitationBtn) {
+    openInvitationBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      unlockAndOpen();
+    });
+  }
+
+  if (gate) {
+    gate.addEventListener('click', unlockAndOpen);
+  }
+
+  // Thử phát nhạc ngay lập tức nếu trình duyệt cho phép autoplay
+  startMusic().then(() => {
+    if (isPlaying && gate) {
+      unlockAndOpen();
+    }
+  }).catch(() => {});
+
+  // Bắt mọi cử chỉ đầu tiên của người dùng trên toàn màn hình để phát nhạc ngay
+  const gestureEvents = ['pointerdown', 'touchstart', 'click', 'keydown', 'scroll'];
+  function onFirstGesture() {
+    unlockAndOpen();
+  }
+
+  function removeAutoplayListeners() {
+    gestureEvents.forEach(evt => {
+      window.removeEventListener(evt, onFirstGesture);
+    });
+  }
+
+  gestureEvents.forEach(evt => {
+    window.addEventListener(evt, onFirstGesture, { once: true, passive: true });
+  });
 
   // Web Audio Fallback Synth Melody (giai điệu lãng mạn nhẹ)
   function playChimeSound() {

@@ -318,6 +318,158 @@ img {
 .stagger-3 { transition-delay: 0.3s; }
 .stagger-4 { transition-delay: 0.4s; }
 
+/* === MÀN CHÀO MỞ THIỆP & PHÁT NHẠC NGAY (INVITATION GATE) === */
+.invitation-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at center, #16432c 0%, #0d2719 65%, #05140c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  cursor: pointer;
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.85s ease;
+}
+
+.invitation-gate.opened {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(1.06);
+  pointer-events: none;
+}
+
+.invitation-gate-card {
+  max-width: 480px;
+  width: 100%;
+  background: rgba(14, 38, 26, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid var(--gold-border);
+  border-radius: var(--radius-lg);
+  padding: 44px 30px;
+  text-align: center;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 0 8px rgba(197, 160, 89, 0.15);
+  animation: gateCardFloat 3.5s ease-in-out infinite alternate;
+  position: relative;
+}
+
+@keyframes gateCardFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+
+.gate-monogram {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid var(--gold-light);
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(197, 160, 89, 0.25) 0%, rgba(20, 61, 40, 0.4) 100%);
+  box-shadow: 0 0 25px rgba(197, 160, 89, 0.4);
+}
+
+.gate-monogram svg {
+  width: 50px;
+  height: 50px;
+  fill: var(--gold-shimmer);
+}
+
+.gate-badge {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.gate-names {
+  font-size: 2.3rem;
+  color: #fff;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+
+.gate-names .ampersand {
+  font-family: var(--font-script);
+  color: var(--gold-light);
+  font-size: 2.5rem;
+}
+
+.gate-date {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: rgba(250, 225, 166, 0.9);
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+
+.gate-divider {
+  color: var(--gold-primary);
+  font-size: 1rem;
+  margin-bottom: 18px;
+  letter-spacing: 6px;
+}
+
+.gate-quote {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-style: italic;
+  line-height: 1.7;
+  margin-bottom: 30px;
+}
+
+.gate-open-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--gold-gradient);
+  color: var(--emerald-900);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  padding: 16px 36px;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(197, 160, 89, 0.45);
+  transition: var(--transition-smooth);
+  animation: pulseGoldBtn 2s infinite;
+}
+
+.gate-open-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 30px rgba(197, 160, 89, 0.6);
+}
+
+@keyframes pulseGoldBtn {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(197, 160, 89, 0.45);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 6px 30px rgba(197, 160, 89, 0.7);
+  }
+}
+
+.gate-hint {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 18px;
+}
+
 /* === THANH ĐIỀU HƯỚNG (NAVBAR) === */
 .navbar {
   position: fixed;
