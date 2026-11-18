@@ -8,6 +8,37 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // ========================================================================
+  // CẤU HÌNH ĐỒNG BỘ GOOGLE SHEETS
+  // Khi bạn tạo Google Apps Script theo hướng dẫn tại GOOGLE_SHEETS_SETUP.md,
+  // chỉ cần dán URL Web App của bạn vào đây:
+  // ========================================================================
+  const GOOGLE_SHEET_URL = ''; // Ví dụ: 'https://script.google.com/macros/s/AKfycb.../exec'
+
+  function sendToGoogleSheet(payload) {
+    if (!GOOGLE_SHEET_URL) {
+      console.log('ℹ️ Google Sheet URL chưa cấu hình. Dữ liệu được lưu an toàn tại localStorage của trình duyệt.');
+      return;
+    }
+
+    try {
+      fetch(GOOGLE_SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Chống lỗi chặn CORS khi gọi Google Apps Script Web App
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      }).then(() => {
+        console.log('✅ Đã đồng bộ dữ liệu lên Google Sheets thành công!');
+      }).catch(err => {
+        console.warn('⚠️ Không thể gửi lên Google Sheets:', err);
+      });
+    } catch (e) {
+      console.warn('⚠️ Lỗi kết nối Google Sheets:', e);
+    }
+  }
+
+  // ========================================================================
   // 1. ĐỒNG HỒ ĐẾM NGƯỢC (COUNTDOWN TIMER)
   // Ngày cưới: 16:00:00 ngày 28/11/2026 (Giờ Việt Nam GMT+7)
   // ========================================================================
@@ -377,6 +408,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const saved = saveWish(name, msg);
       renderWishCard(saved, true);
 
+      // Gửi đồng bộ lên Google Sheets
+      sendToGoogleSheet({
+        type: 'Lời chúc',
+        name: name,
+        message: msg,
+        time: new Date().toLocaleString('vi-VN')
+      });
+
       // Reset form & thông báo
       guestbookForm.reset();
       alert('Cảm ơn bạn đã gửi lời chúc mừng ấm áp tới Trung Hiếu & Hoài Thương! 💕');
@@ -399,11 +438,27 @@ document.addEventListener('DOMContentLoaded', () => {
       const note = document.getElementById('rsvpNote').value.trim();
       const eventChoice = document.querySelector('input[name="rsvpEvent"]:checked')?.value || 'ca-hai';
 
+      let eventText = 'Cả hai buổi tiệc (28 & 29/11)';
+      if (eventChoice === 'bua-com') eventText = 'Tiệc cơm thân mật (16:00 - 28/11)';
+      if (eventChoice === 'vu-quy') eventText = 'Lễ Vu Quy (08:30 - 29/11)';
+      if (eventChoice === 'khong-the') eventText = 'Rất tiếc không thể tham dự';
+
       // Lưu trữ xác nhận vào localStorage
-      const rsvpData = { name, phone, guests, note, eventChoice, time: new Date().toISOString() };
+      const rsvpData = { name, phone, guests, note, eventChoice, eventText, time: new Date().toISOString() };
       try {
         localStorage.setItem('wedding_rsvp_' + phone, JSON.stringify(rsvpData));
       } catch (err) {}
+
+      // Gửi đồng bộ lên Google Sheets
+      sendToGoogleSheet({
+        type: 'Xác nhận RSVP',
+        name: name,
+        phone: phone,
+        event: eventText,
+        guests: guests,
+        note: note,
+        time: new Date().toLocaleString('vi-VN')
+      });
 
       // Ẩn form và hiển thị lời cảm ơn trang trọng
       rsvpForm.style.display = 'none';
