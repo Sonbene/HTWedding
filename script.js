@@ -728,6 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function unlockAndOpen() {
+    document.body.classList.remove('gate-locked');
     playAudio().catch(() => {
       // Fallback nếu mp3 bị chặn
       playChimeSound();
@@ -752,9 +753,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (gate) {
-    gate.addEventListener('click', () => {
+    gate.addEventListener('click', (e) => {
       unlockAndOpen();
     });
+  }
+
+  // Khóa cuộn màn hình khi màn mở thiệp đang hiển thị (ngăn cuộn chuột làm trôi màn hình mà chưa phát nhạc)
+  if (gate && !gate.classList.contains('opened')) {
+    document.body.classList.add('gate-locked');
   }
 
   // Thử phát nhạc ngay lập tức khi mở web
@@ -763,20 +769,23 @@ document.addEventListener('DOMContentLoaded', () => {
       // Trình duyệt cho phép autoplay
       setPlayingState(true);
       if (gate) {
+        document.body.classList.remove('gate-locked');
         gate.classList.add('opened');
         setTimeout(() => { gate.style.display = 'none'; }, 600);
       }
     }).catch(() => {
       // Trình duyệt chặn autoplay khi chưa chạm màn hình:
-      // Giữ đúng trạng thái chưa phát và để màn mở thiệp đón người dùng chạm mở
+      // Giữ đúng trạng thái chưa phát và giữ màn mở thiệp để người dùng chạm mở
       setPlayingState(false);
     });
   }
 
-  // Bắt mọi cử chỉ đầu tiên của người dùng trên toàn màn hình để phát nhạc ngay
-  const gestureEvents = ['pointerdown', 'touchstart', 'click', 'keydown', 'scroll'];
+  // Chỉ bắt sự kiện Click / Chạm thực tế của người dùng (TUYỆT ĐỐI KHÔNG dùng scroll để tránh trôi thiệp mà không có nhạc)
+  const gestureEvents = ['click', 'touchend'];
   function onFirstGesture() {
-    unlockAndOpen();
+    if (gate && !gate.classList.contains('opened')) {
+      unlockAndOpen();
+    }
   }
 
   function removeAutoplayListeners() {

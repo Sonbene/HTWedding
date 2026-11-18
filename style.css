@@ -319,6 +319,11 @@ img {
 .stagger-4 { transition-delay: 0.4s; }
 
 /* === MÀN CHÀO MỞ THIỆP & PHÁT NHẠC NGAY (INVITATION GATE) === */
+body.gate-locked {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
 .invitation-gate {
   position: fixed;
   inset: 0;

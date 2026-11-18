@@ -1,71 +1,104 @@
-# 📋 HƯỚNG DẪN KẾT NỐI GOOGLE SHEETS (2 PHÚT)
-### Nhận Lời Chúc & Xác Nhận Tham Dự (RSVP) — Đám Cưới Trung Hiếu & Hoài Thương
+# 📋 HƯỚNG DẪN KẾT NỐI GOOGLE SHEETS TỰ ĐỘNG (CHUẨN FORM 100%)
+### Nhận Riêng 2 Bảng: "Xác Nhận RSVP" & "Lời Chúc" — Đám Cưới Trung Hiếu & Hoài Thương
 
-Tất cả lời chúc mừng trong **Sổ lưu bút** và thông tin khách đăng ký **Xác nhận tham dự (RSVP)** sẽ tự động bay thẳng vào file Google Trang Tính (Google Sheets) của bạn hoàn toàn tự động và miễn phí trọn đời.
-
----
-
-## 📌 BƯỚC 1: TẠO TRANG TÍNH GOOGLE SHEETS
-1. Mở trình duyệt và truy cập: [https://sheets.new](https://sheets.new) để tạo một bảng tính Google Sheets mới.
-2. Đặt tên bảng tính ở góc trên bên trái: **"Khách Mời Đám Cưới Trung Hiếu & Hoài Thương"**.
-3. Tại **Hàng 1 (Dòng tiêu đề)**, nhập tên cho 7 cột từ A đến G như sau:
-   * Cột **A**: `Thời Gian`
-   * Cột **B**: `Phân Loại` *(Lời chúc / Xác nhận RSVP)*
-   * Cột **C**: `Họ Và Tên`
-   * Cột **D**: `Lời Chúc / Lời Nhắn Gửi`
-   * Cột **E**: `Sự Kiện Tham Dự` *(Tiệc cơm 28/11 / Vu Quy 29/11 / Cả hai)*
-   * Cột **F**: `Số Lượng Khách`
-   * Cột **G**: `Số Điện Thoại / Zalo`
+Đoạn mã Google Apps Script thông minh dưới đây sẽ **TỰ ĐỘNG TẠO 2 TAB RIÊNG BIỆT** trong file Google Sheets của bạn:
+1. Tab **`Xác Nhận RSVP`**: Quản lý danh sách khách dự tiệc, số điện thoại, số lượng khách, sự kiện tham gia.
+2. Tab **`Lời Chúc`**: Lưu giữ những lời chúc mừng và lời nhắn nhủ từ bạn bè, người thân.
 
 ---
 
-## 📌 BƯỚC 2: MỞ APPS SCRIPT VÀ DÁN CODE
+## 📌 BƯỚC 1: TẠO FILE GOOGLE SHEETS MỚI
+1. Truy cập: [https://sheets.new](https://sheets.new) để mở một bảng tính Google Sheets mới.
+2. Đặt tên file ở góc trên bên trái: **"Khách Mời Đám Cưới - Trung Hiếu & Hoài Thương"**.
+3. *(Lưu ý: Bạn **không cần phải gõ tiêu đề cột thủ công** — đoạn mã ở Bước 2 sẽ tự động tạo bảng, in đậm tiêu đề và tô màu cho bạn!)*
+
+Nếu bạn muốn tạo thủ công trước thì cấu trúc 2 Tab chuẩn như sau:
+
+#### Tab 1: `Xác Nhận RSVP`
+| Cột A | Cột B | Cột C | Cột D | Cột E | Cột F |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Thời Gian** | **Họ Và Tên** | **Số Điện Thoại / Zalo** | **Sự Kiện Tham Dự** | **Số Lượng Khách** | **Lời Nhắn Gửi** |
+
+#### Tab 2: `Lời Chúc`
+| Cột A | Cột B | Cột C |
+| :--- | :--- | :--- |
+| **Thời Gian** | **Họ Và Tên** | **Lời Chúc Phúc** |
+
+---
+
+## 📌 BƯỚC 2: DÁN ĐOẠN MÃ XỬ LÝ (APPS SCRIPT TỰ ĐỘNG)
 1. Trên thanh menu trên cùng của Google Sheets, chọn:  
    👉 **Tiện ích mở rộng (Extensions)** ➔ **Apps Script**.
-2. Một tab mới sẽ mở ra. Xóa sạch mọi đoạn code mặc định có sẵn trong ô soạn thảo, sau đó **sao chép toàn bộ đoạn mã bên dưới và dán vào**:
+2. Xóa sạch mọi dòng code mặc định trong ô soạn thảo, sau đó **copy toàn bộ đoạn mã dưới đây và dán vào**:
 
 ```javascript
 function doPost(e) {
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data;
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var data = {};
     
     if (e.postData && e.postData.contents) {
       data = JSON.parse(e.postData.contents);
     } else if (e.parameter) {
       data = e.parameter;
-    } else {
-      data = {};
     }
     
     var time = data.time || new Date().toLocaleString('vi-VN');
-    var type = data.type || 'Không xác định';
+    var type = data.type || '';
     var name = data.name || '';
     
-    if (type === 'Lời chúc') {
-      // Ghi hàng mới cho Lời Chúc: [Thời gian, Phân loại, Tên, Lời chúc, '', '', '']
-      sheet.appendRow([
+    // 1. XỬ LÝ XÁC NHẬN THAM DỰ (RSVP)
+    if (type === 'Xác nhận RSVP') {
+      var rsvpSheet = ss.getSheetByName('Xác Nhận RSVP');
+      if (!rsvpSheet) {
+        rsvpSheet = ss.insertSheet('Xác Nhận RSVP');
+      }
+      
+      // Nếu sheet mới tinh, tự động tạo dòng tiêu đề chuẩn
+      if (rsvpSheet.getLastRow() === 0) {
+        var header = ['Thời Gian', 'Họ Và Tên', 'Số Điện Thoại / Zalo', 'Sự Kiện Tham Dự', 'Số Lượng Khách', 'Lời Nhắn Gửi'];
+        rsvpSheet.appendRow(header);
+        rsvpSheet.getRange(1, 1, 1, header.length)
+          .setFontWeight('bold')
+          .setBackground('#D4EDDA')
+          .setFontColor('#155724');
+      }
+      
+      rsvpSheet.appendRow([
         time,
-        type,
         name,
-        data.message || '',
-        '',
-        '',
-        ''
-      ]);
-    } else if (type === 'Xác nhận RSVP') {
-      // Ghi hàng mới cho RSVP: [Thời gian, Phân loại, Tên, Lời nhắn, Sự kiện, Số khách, Số điện thoại]
-      sheet.appendRow([
-        time,
-        type,
-        name,
-        data.note || '',
+        "'" + (data.phone || ''), // Thêm dấu ' để giữ nguyên số 0 ở đầu số điện thoại
         data.event || '',
         data.guests || '1',
-        data.phone || ''
+        data.note || ''
       ]);
+      
+    // 2. XỬ LÝ SỔ LƯU BÚT (LỜI CHÚC)
+    } else if (type === 'Lời chúc') {
+      var wishSheet = ss.getSheetByName('Lời Chúc');
+      if (!wishSheet) {
+        wishSheet = ss.insertSheet('Lời Chúc');
+      }
+      
+      // Nếu sheet mới tinh, tự động tạo dòng tiêu đề chuẩn
+      if (wishSheet.getLastRow() === 0) {
+        var header = ['Thời Gian', 'Họ Và Tên', 'Lời Chúc Phúc'];
+        wishSheet.appendRow(header);
+        wishSheet.getRange(1, 1, 1, header.length)
+          .setFontWeight('bold')
+          .setBackground('#FFF3CD')
+          .setFontColor('#856404');
+      }
+      
+      wishSheet.appendRow([
+        time,
+        name,
+        data.message || ''
+      ]);
+      
     } else {
-      sheet.appendRow([time, type, name, JSON.stringify(data), '', '', '']);
+      var defaultSheet = ss.getActiveSheet();
+      defaultSheet.appendRow([time, type, name, JSON.stringify(data)]);
     }
 
     return ContentService.createTextOutput(JSON.stringify({ result: 'success' }))
@@ -82,37 +115,37 @@ function doGet(e) {
 }
 ```
 
-3. Bấm biểu tượng chiếc đĩa mềm **Lưu (Save 💾)** hoặc nhấn phím `Ctrl + S`.
+3. Bấm nút chiếc đĩa mềm **Lưu (Save 💾)** hoặc nhấn phím `Ctrl + S`.
 
 ---
 
 ## 📌 BƯỚC 3: TRIỂN KHAI (DEPLOY) LẤY LINK WEB APP
 1. Ở góc trên cùng bên phải giao diện Apps Script, bấm nút **Triển khai (Deploy)** ➔ chọn **Tùy chọn triển khai mới (New deployment)**.
-2. Bấm vào biểu tượng bánh răng ⚙️ ở góc trái (bên cạnh dòng "Chọn loại"), chọn **Ứng dụng web (Web app)**.
+2. Bấm vào biểu tượng bánh răng ⚙️ (bên cạnh dòng "Chọn loại"), chọn **Ứng dụng web (Web app)**.
 3. Điền các trường thông số:
-   * **Mô tả (Description):** `Nhận phản hồi đám cưới Hiếu Thương`
+   * **Mô tả (Description):** `Nhận RSVP và Lời chúc đám cưới`
    * **Thực thi dưới dạng (Execute as):** `Tôi (Email của bạn)`
    * **Người có quyền truy cập (Who has access):** **Bất kỳ ai (Anyone)**  
-     *(⚠️ Cực kỳ quan trọng: Chọn "Bất kỳ ai" để khách mời vào trang web không cần phải đăng nhập tài khoản Google vẫn gửi được)*.
+     *(⚠️ Bắt buộc chọn "Bất kỳ ai" để khách mời không cần đăng nhập tài khoản Google vẫn gửi được)*.
 4. Bấm nút màu xanh **Triển khai (Deploy)**.
-   * *Nếu Google hiển thị bảng cảnh báo cấp quyền: Bấm "Ủy quyền truy cập" (Authorize access) ➔ Chọn tài khoản Google của bạn ➔ Bấm vào chữ "Nâng cao" (Advanced) ➔ Bấm "Đi tới... (không an toàn)" ➔ Bấm "Cho phép" (Allow)*.
-5. Google sẽ hiện hộp thoại thông báo thành công và cấp cho bạn một **URL ứng dụng web** có dạng:  
-   `https://script.google.com/macros/s/AKfycbx...abc123.../exec`
+   * *Nếu Google hiển thị bảng cảnh báo: Bấm "Ủy quyền truy cập" ➔ Chọn tài khoản Google của bạn ➔ Bấm vào dòng chữ nhỏ "Nâng cao (Advanced)" ➔ Bấm "Đi tới... (không an toàn)" ➔ Bấm "Cho phép (Allow)"*.
+5. Google sẽ hiện hộp thoại thông báo thành công và cấp cho bạn một **URL ứng dụng web** dạng:  
+   `https://script.google.com/macros/s/AKfycbx.../exec`
 6. Bấm nút **Sao chép (Copy)** đường link này.
 
 ---
 
-## 📌 BƯỚC 4: DÁN ĐƯỜNG LINK VÀO WEBSITE CỦA BẠN
+## 📌 BƯỚC 4: DÁN ĐƯỜNG LINK VÀO FILE SCRIPT.JS
 1. Mở file [script.js](file:///d:/Project/forfun/webwedding/script.js).
-2. Tại dòng 14, dán đường link bạn vừa copy vào giữa hai dấu nháy đơn của biến `GOOGLE_SHEET_URL`:
+2. Tại dòng 14, dán link vừa sao chép vào biến `GOOGLE_SHEET_URL`:
    ```javascript
-   const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbx...abc123.../exec';
+   const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
    ```
 3. Lưu file `script.js` lại.
 
 ---
 
-## 🎉 KIỂM TRA KẾT QUẢ
+## 🎉 HOÀN TẤT & KIỂM TRA
 * Mở trang web [index.html](file:///d:/Project/forfun/webwedding/index.html).
-* Thử nhập một lời chúc ở mục **Sổ Lưu Bút** và bấm gửi, hoặc điền form **Xác Nhận Tham Dự (RSVP)**.
-* Mở lại file Google Sheet: Bạn sẽ thấy ngay lập tức xuất hiện một hàng mới với đầy đủ thông tin thời gian, tên khách, số điện thoại và nội dung!
+* Gửi thử 1 lời chúc ở mục **Sổ Lưu Bút** và gửi 1 xác nhận ở mục **RSVP**.
+* Quay lại Google Sheets: Bạn sẽ thấy ngay lập tức xuất hiện 2 Tab **`Xác Nhận RSVP`** và **`Lời Chúc`** với đầy đủ thông tin được phân loại gọn gàng, sạch đẹp!
